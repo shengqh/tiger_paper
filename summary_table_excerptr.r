@@ -48,7 +48,11 @@ tRNArpmt100<-apply(tRNArpmt, 2, function(x){
   sum(x > 100)
 })
 
-finalTable<-rbind(final[1:3,],
+annotated<-apply(final, 2, function(x){
+  round(x["Host Reads"] / x["Total Reads"],2)
+})
+
+finalTable<-round(rbind(final[1:3,],
             "miRNA > 10RPM" = miRNArpm10,
             "miRNA > 100RPMM" = miRNArpmm100,
             "miR-22-3p RPM" = miR22_3p_rpm,
@@ -57,8 +61,15 @@ finalTable<-rbind(final[1:3,],
             "miR-92a-3p RPMM" = miR92a_3p_rpmm,
             final[4,,drop=F],
             "tDR > 100 RPMtDR" = tRNArpmt100,
-            final[5:nrow(final),,drop=F])
+            final[5:nrow(final),,drop=F],
+            "% assigned" = annotated),2)
 colnames(finalTable)<-gsub("sample_","",colnames(finalTable))
 colnames(finalTable)<-gsub("_fastq","",colnames(finalTable))
 
-write.csv(finalTable, file="T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/forpaper/KCV_3018_77_78_79.excerptr.summery.csv")
+write.csv(finalTable, file="T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/forpaper/KCV_3018_77_78_79.excerptr.summary.all.csv")
+
+slimTable<-finalTable[,grepl("APOB_WT|HDL_WT|Liver_WT", colnames(finalTable))]
+write.csv(slimTable, file="T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/forpaper/KCV_3018_77_78_79.excerptr.summary.csv")
+
+
+

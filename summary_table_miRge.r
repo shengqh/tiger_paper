@@ -36,13 +36,18 @@ miR22_3p_rpmm<-miRNArpmm["mmu-miR-22-3p",]
 miR92a_3p_rpm<-miRNArpm["mmu-miR-92a-3p",]
 miR92a_3p_rpmm<-miRNArpmm["mmu-miR-92a-3p",]
 
-finalTable<-rbind(summary[1:2,],
+annotated<-apply(summary, 2, function(x){
+  round((x["miRNA total reads"] + x["other ncRNA total reads"] + x["mRNA total reads"])  / x["Total Reads"],2)
+})
+
+finalTable<-round(rbind(summary[1:2,],
             "miRNA > 10RPM" = miRNArpm10,
             "miRNA > 100RPMM" = miRNArpmm100,
             "miR-22-3p RPM" = miR22_3p_rpm,
             "miR-22-3p RPMM" = miR22_3p_rpmm,
             "miR-92a-3p RPM" = miR92a_3p_rpm,
             "miR-92a-3p RPMM" = miR92a_3p_rpmm,
-            summary[3:nrow(summary),,drop=F])
+            summary[3:nrow(summary),,drop=F],
+            "% assigned" = annotated),2)
 
 write.csv(finalTable, file="T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/forpaper/KCV_3018_77_78_79.miRge.summary.csv")

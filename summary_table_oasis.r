@@ -1,89 +1,68 @@
-host_file<-"/scratch/cqs/shengq2/vickers/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/host_genome/bowtie1_genome_1mm_NTA_smallRNA_table/result/smallRNA_1mm_KCV_3018_77_78_79.mapped.count"
-final_unmapped_file<-"/scratch/cqs/shengq2/vickers/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/final_unmapped/final_unmapped_reads_summary/result/KCV_3018_77_78_79.count"
-nonhost_file<-"/scratch/cqs/shengq2/vickers/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/data_visualization/reads_in_tasks/result/KCV_3018_77_78_79.TaskReads.csv"
+#Oasis
+data <- read.table("T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/other_pipelines/Oasis/59e909b321b68/data/summary/images/data.tsv", sep = '\t', header = TRUE)
+colnames(data) <- colnames(data[2:17])
+data <- t(data[1:(ncol(data)-1)])
 
-host<-read.table(host_file, sep="\t", header=T, row.names=1)
-unannotated<-read.table(final_unmapped_file, sep="\t", header=T, row.names=1)
-nonhost<-read.csv(nonhost_file, row.names=1)
+#summary files per sample
+sample <- dir("T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/other_pipelines/Oasis/59e909b321b68/data/counts/species",
+    pattern = "smallrna.table",full.names=TRUE)
 
-combined<-rbind(host[c("TotalReads", "MappedReads", "FeatureReads", "miRNA", "tRNA", "snRNA", "rRNA", "lincRNA", "misc_RNA", "snoRNA"),],
-                unannotated["FeatureReads",],
-                nonhost[c("bacteria_group1", "bacteria_group2", "fungus_group4", "miRBase", "tRNA", "rRNA"),])
+summary <- data.frame(matrix(NA,nrow=5, ncol=length(sample)))
+for (i in 1:length(sample)){
+  summary[,i]<-fread(sample[i],select = 2, data.table=FALSE)
+  }
 
-annotated<-apply(combined, 2, function(x){
-  round((x["MappedReads"] + x["FeatureReads1"]) / x["TotalReads"],2)
-})
+rownames(summary) <- c("miRNA", "piRNA", "snoRNA", "snRNA", "rRNA")
+colnames(summary) <- gsub(".smallrna.table", "", basename(sample))
 
-final<-rbind(combined, annotated)
-rownames(final)<-c("Total reads", 
-                   "Host reads", 
-                   "Host smallRNA reads", 
-                   "miRNA total reads", 
-                   "tDR total reads", 
-                   "snDR total reads", 
-                   "rDR total reads",
-                   "lncDR total reads",
-                   "misc_RNA total reads",
-                   "snoDR total reads",
-                   "Nonhost reads",
-                   "HMB (Bac) reads",
-                   "Environment (Bac) reads",
-                   "Fungi reads",
-                   "Non-host miRNA reads",
-                   "Non-host tDR reads",
-                   "Non-host rDR reads",
-                   "% assigned")
+#miRNA files
+sample_miRNA <- dir("T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/other_pipelines/Oasis/59e909b321b68/data/counts/species",
+            pattern = "mirnaCounts.txt",full.names=TRUE)
 
-miRNA<-read.table("/scratch/cqs/shengq2/vickers/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/host_genome/bowtie1_genome_1mm_NTA_smallRNA_table/result/smallRNA_1mm_KCV_3018_77_78_79.miRNA.count", sep="\t", header=T, row.names=1)
-miRNA<-miRNA[,colnames(final)]
-miRNArpm<-t(t(miRNA * 1000000) / unlist(final[1,]))
-miRNArpmm<-t(t(miRNA * 1000000) / unlist(final[4,]))
+summary_miRNA <- list()
+for (i in 1:length(sample_miRNA)){
+  summary_miRNA[[i]]<-read.table(sample_miRNA[i])
+}
 
-miRNArpm10<-apply(miRNArpm, 2, function(x){
+summary_miRNA_final <- Reduce(function(...) merge(..., all=TRUE, by= "V1"), summary_miRNA)
+summary_miRNA_final <- data.frame(summary_miRNA_final[,2:ncol(summary_miRNA_final)],row.names = summary_miRNA_final[,1])
+colnames(summary_miRNA_final) <- gsub(".smallrna.table", "", basename(sample))
+write.csv(summary_miRNA_final,"T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/forpaper/KCV_3018_77_78_79.oasis.miRNA.csv")
+
+miRNArpm <- t(t(summary_miRNA_final* 1000000) / unlist(data[1,]))
+miRNArpmm <- t(t(summary_miRNA_final * 1000000) / unlist(data[9,]))
+
+miRNArpm10 <- apply(miRNArpm, 2, function(x){
   sum(x > 10)
 })
-miRNArpmm100<-apply(miRNArpmm, 2, function(x){
+miRNArpmm100 <- apply(miRNArpmm, 2, function(x){
   sum(x > 100)
 })
+
 miR22_3p_rpm<-miRNArpm["mmu-miR-22-3p",]
 miR22_3p_rpmm<-miRNArpmm["mmu-miR-22-3p",]
 miR92a_3p_rpm<-miRNArpm["mmu-miR-92a-3p",]
 miR92a_3p_rpmm<-miRNArpmm["mmu-miR-92a-3p",]
 
-tRNA<-read.table("/scratch/cqs/shengq2/vickers/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/host_genome/bowtie1_genome_1mm_NTA_smallRNA_table/result/smallRNA_1mm_KCV_3018_77_78_79.tRNA.count", sep="\t", header=T, row.names=1)
-tRNA<-tRNA[,colnames(final)]
-tRNArpmt<-t(t(tRNA * 1000000) / unlist(final[5,]))
-tRNArpmt100<-apply(tRNArpmt, 2, function(x){
-  sum(x > 100)
-})
+host_reads<- (data["Genome",]+ colSums(summary))
 
-snRNA<-read.table("/scratch/cqs/shengq2/vickers/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/host_genome/bowtie1_genome_1mm_NTA_smallRNA_table/result/smallRNA_1mm_KCV_3018_77_78_79.snRNA.count", sep="\t", header=T, row.names=1)
-snRNA<-snRNA[,colnames(final)]
-snRNArpms<-t(t(snRNA * 1000000) / unlist(final[6,]))
-snRNArpms100<-apply(snRNArpms, 2, function(x){
-  sum(x > 100)
-})
+annotated <- (data["Genome",]+ colSums(summary))/ data["Initial",]
 
-rRNA<-read.table("/scratch/cqs/shengq2/vickers/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/host_genome/bowtie1_genome_1mm_NTA_smallRNA_table/result/smallRNA_1mm_KCV_3018_77_78_79.rRNA.count", sep="\t", header=T, row.names=1)
-rRNA<-rRNA[,colnames(final)]
-rRNArpmr<-t(t(rRNA * 1000000) / unlist(final[7,]))
-rRNArpmr100<-apply(rRNArpmr, 2, function(x){
-  sum(x > 100)
-})
+finalTable <- rbind(data[1,],
+                    host_reads,
+                    summary[1,],
+                    miRNArpm10,
+                    miRNArpmm100,
+                    miR22_3p_rpm,
+                    miR22_3p_rpmm,
+                    miR92a_3p_rpm,
+                    miR92a_3p_rpmm,
+                    summary[c(4,5,3,2),],
+                    annotated)
+rownames(finalTable)<-c("Total Reads","Host Reads", "miRNA total reads",
+                        "miRNA > 10RPM", "miRNA > 100RPMM", "miR-22-3p RPM", "miR-22-3p RPMM",
+                        "miR-92a-3p RPM", "miR-92a-3p RPMM", "snDR total reads", "rDR total reads",
+                        "snoDR total reads", "piRNA total reads", "% assigned")
 
-finalTable<-rbind(final[1:4,],
-            "miRNA > 10RPM" = miRNArpm10,
-            "miRNA > 100RPMM" = miRNArpmm100,
-            "miR-22-3p RPM" = miR22_3p_rpm,
-            "miR-22-3p RPMM" = miR22_3p_rpmm,
-            "miR-92a-3p RPM" = miR92a_3p_rpm,
-            "miR-92a-3p RPMM" = miR92a_3p_rpmm,
-            final[5,],
-            "tDR > 100 RPMtDR" = tRNArpmt100,
-            final[6,],
-            "snDR > 100 RPMsnDR" = snRNArpms100,
-            final[7,],
-            "rDR > 100 RPMrDR" = rRNArpmr100,
-            final[8:nrow(final),])
+write.csv(finalTable, file="T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/forpaper/KCV_3018_77_78_79.oasis.summary.csv")
 
-write.csv(finalTable, file="/scratch/cqs/shengq2/vickers/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/KCV_3018_77_78_79.summery.csv")

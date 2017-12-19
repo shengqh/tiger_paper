@@ -15,8 +15,8 @@ annotated<-apply(combined, 2, function(x){
 })
 
 final<-rbind(combined, annotated)
-rownames(final)<-c("Total reads", 
-                   "Host reads", 
+rownames(final)<-c("Total Reads", 
+                   "Host Reads", 
                    "Host smallRNA reads", 
                    "miRNA total reads", 
                    "tDR total reads", 

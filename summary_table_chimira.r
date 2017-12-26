@@ -12,7 +12,7 @@ write.csv(miRNA, file="T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallR
 
 totalMiRNA<-apply(miRNA, 2, sum)
 
-summary<-rbind("Total Reads" = tiger["Total reads",],
+summary<-rbind("Total Reads" = tiger["Total Reads",],
                "miRNA total reads" = totalMiRNA)
 
 
@@ -30,9 +30,7 @@ miR22_3p_rpmm<-miRNArpmm["mmu-mir-22-3p",]
 miR92a_3p_rpm<-miRNArpm["mmu-mir-92a-3p",]
 miR92a_3p_rpmm<-miRNArpmm["mmu-mir-92a-3p",]
 
-annotated<-apply(summary, 2, function(x){
-  round(x["miRNA total reads"] / x["Total reads"],2)
-})
+annotated<-round(summary["miRNA total reads",] / summary["Total Reads",],2)
 
 finalTable<-round(rbind(summary[1:2,],
             "miRNA > 10RPM" = miRNArpm10,

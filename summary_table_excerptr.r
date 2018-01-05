@@ -66,10 +66,7 @@ finalTable<-round(rbind(final[1:3,],
 colnames(finalTable)<-gsub("sample_","",colnames(finalTable))
 colnames(finalTable)<-gsub("_fastq","",colnames(finalTable))
 
-write.csv(finalTable, file="T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/forpaper/KCV_3018_77_78_79.excerptr.summary.all.csv")
-
-slimTable<-finalTable[,grepl("APOB_WT|HDL_WT|Liver_WT", colnames(finalTable))]
-write.csv(slimTable, file="T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/forpaper/KCV_3018_77_78_79.excerptr.summary.csv")
+write.csv(finalTable, file="T:/Shared/Labs/Vickers Lab/Tiger/projects/20170628_smallRNA_3018-KCV-77_78_79_mouse_v3/forpaper/KCV_3018_77_78_79.excerptr.summary.csv")
 
 
 

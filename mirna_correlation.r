@@ -263,14 +263,18 @@ rownames(ftable)<-ftable$SampleFeature
 ftable<-ftable[,c(2:ncol(ftable))]
 ftable<-log2(ftable+1)
 
+corTestWithoutZero <- function(x, y, method="spearman") {
+  sumxy<-!is.na(x) & !is.na(y) & (x != 0) & (y != 0)
+  ccx<-x[sumxy]
+  ccy<-y[sumxy]
+  cor.test(ccx, ccy, method=method)
+}
+
 panel.cor <- function(x, y, digits = 2, prefix = "", ...) {
   usr <- par("usr")
   on.exit(par(usr))
   par(usr = c(0, 1, 0, 1))
-  sumxy<-!is.na(x) & !is.na(y) & (x + y) > 0
-  ccx<-x[sumxy]
-  ccy<-y[sumxy]
-  test <- cor.test(ccx, ccy, method="spearman")
+  test <- corTestWithoutZero(x, y)
   txt <- format(c(test$estimate, 0.123456789), digits = digits)[1]
   txt <- paste("R = ", txt, sep = "")
   Signif <- symnum(test$p.value, 
